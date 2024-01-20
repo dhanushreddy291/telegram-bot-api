@@ -1,12 +1,9 @@
 {
-    "name": "Te",
+    "name": "Telegram Bot API",
     "build": {
       "dockerfile": "Dockerfile"
     },
     "customizations": {
-      "vscode": {
-        "extensions": ["denoland.vscode-deno"]
-      },
       "settings": {
         "terminal.integrated.profiles.linux": {
           "sh": {
