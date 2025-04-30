@@ -1,38 +1,38 @@
-# Stage 1: Build stage
+# Stage 1: Build Stage
+# Use a minimal base image like Alpine for the build environment
 FROM alpine:latest as builder
 
-# Update and upgrade packages
-RUN apk update && apk upgrade
+# Update package lists and install necessary build dependencies
+# --no-cache reduces image size by not storing the apk cache
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache alpine-sdk linux-headers git zlib-dev openssl-dev gperf cmake
 
-# Install required dependencies
-RUN apk add --update alpine-sdk linux-headers git zlib-dev openssl-dev gperf cmake
+# Set the working directory inside the container
+WORKDIR /app
 
-# Clone the Telegram Bot API repository
+# Clone the telegram-bot-api repository and its submodules
 RUN git clone --recursive https://github.com/tdlib/telegram-bot-api.git
+WORKDIR /app/telegram-bot-api
 
-# Navigate to the cloned repository
-WORKDIR /telegram-bot-api
+# Clean up previous builds if any, create a build directory,
+# configure with CMake for a Release build and install to /usr/local,
+# then build and install the project.
+RUN rm -rf build && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr/local .. && \
+    cmake --build . --target install
 
-# Remove existing build directory
-RUN rm -rf build
-
-# Create a new build directory
-RUN mkdir build
-
-# Navigate to the build directory
-WORKDIR /telegram-bot-api/build
-
-# Run cmake to configure the build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=.. ..
-
-# Build the application
-RUN cmake --build . --target telegram-bot-api
-
-# Stage 2: Final stage
+# Stage 2: Final Image
+# Use a minimal base image again for the final runtime environment
 FROM alpine:latest
 
-# Copy only the necessary artifacts from the builder stage
-COPY --from=builder /telegram-bot-api/build/bin/telegram-bot-api /usr/local/bin/
+# Copy only the necessary compiled binary from the build stage to the final image
+COPY --from=builder /usr/local/bin/telegram-bot-api* /usr/local/bin/
 
-# Optionally, you can set the default command to run the application
-# CMD ["telegram-bot-api"]
+# Expose the port that the telegram-bot-api application will listen on inside the container (3002)
+EXPOSE 3002
+
+# Reference environment variables $API_ID and $API_HASH, which will be substituted at runtime
+CMD ["telegram-bot-api", "--local", "--http-port", "3002", "--api-id", "$API_ID", "--api-hash", "$API_HASH"]
