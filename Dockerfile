@@ -22,7 +22,8 @@ RUN rm -rf build && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr/local .. && \
-    cmake --build . --target install
+    cmake --build . --target install && \
+    chmod +x /usr/local/bin/telegram-bot-api*
 
 # Stage 2: Final Image
 # Use a minimal base image again for the final runtime environment
