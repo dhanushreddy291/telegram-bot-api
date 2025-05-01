@@ -27,6 +27,7 @@ RUN rm -rf build && \
 # Stage 2: Final Image
 # Use a minimal base image again for the final runtime environment
 FROM alpine:latest
+RUN apk --no-cache add libstdc++ libgcc
 
 # Copy only the necessary compiled binary from the build stage to the final image
 COPY --from=builder /usr/local/bin/telegram-bot-api* /usr/local/bin/
@@ -35,4 +36,4 @@ COPY --from=builder /usr/local/bin/telegram-bot-api* /usr/local/bin/
 EXPOSE 3002
 
 # Reference environment variables $API_ID and $API_HASH, which will be substituted at runtime
-CMD ["telegram-bot-api", "--local", "--http-port", "3002", "--api-id", "$API_ID", "--api-hash", "$API_HASH"]
+CMD ["sh", "-c", "telegram-bot-api --local --http-port 3002 --api-id \"$API_ID\" --api-hash \"$API_HASH\""]
