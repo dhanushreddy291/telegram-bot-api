@@ -55,7 +55,7 @@ RUN apk update && \
     apk upgrade && \
     apk add --no-cache alpine-sdk linux-headers git zlib-dev openssl-dev gperf cmake
 WORKDIR /app
-RUN git clone --recursive [https://github.com/tdlib/telegram-bot-api.git](https://github.com/tdlib/telegram-bot-api.git)
+RUN git clone --recursive https://github.com/tdlib/telegram-bot-api.git
 WORKDIR /app/telegram-bot-api
 RUN rm -rf build && \
     mkdir build && \
